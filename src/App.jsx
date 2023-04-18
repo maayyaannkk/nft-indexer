@@ -1,7 +1,4 @@
-import {
-  Box, Button, Center, Flex,
-  Heading, Image, Input, SimpleGrid, Text,
-} from '@chakra-ui/react';
+import { Box, Button, Center, Flex, Heading, Image, Input, SimpleGrid, Spinner, Text, } from '@chakra-ui/react';
 import { Alchemy, Network } from 'alchemy-sdk';
 import { useState } from 'react';
 import env from 'dotenv';
@@ -9,7 +6,7 @@ import env from 'dotenv';
 function App() {
   const [userAddress, setUserAddress] = useState('');
   const [results, setResults] = useState([]);
-  const [hasQueried, setHasQueried] = useState(false);
+  const [isQuerying, setIsQuerying] = useState(false);
   const [tokenDataObjects, setTokenDataObjects] = useState([]);
 
   const config = {
@@ -18,6 +15,7 @@ function App() {
   };
 
   async function getNFTsForOwner() {
+    setIsQuerying(true);
 
     const alchemy = new Alchemy(config);
     const data = await alchemy.nft.getNftsForOwner(userAddress);
@@ -28,14 +26,15 @@ function App() {
     for (let i = 0; i < data.ownedNfts.length; i++) {
       const tokenData = alchemy.nft.getNftMetadata(
         data.ownedNfts[i].contract.address,
-        data.ownedNfts[i].tokenId, 
+        data.ownedNfts[i].tokenId,
         {}
       );
       tokenDataPromises.push(tokenData);
     }
 
     setTokenDataObjects(await Promise.all(tokenDataPromises));
-    setHasQueried(true);
+
+    setIsQuerying(false);
   }
   return (
     <Box w="100vw">
@@ -69,13 +68,13 @@ function App() {
           bgColor="white"
           fontSize={24}
         />
-        <Button fontSize={20} onClick={getNFTsForOwner} mt={36} bgColor="blue">
+        <Button fontSize={20} onClick={getNFTsForOwner} mt={36} bgColor="blue" isLoading={isQuerying}>
           Fetch NFTs
         </Button>
 
         <Heading my={36}>Here are your NFTs:</Heading>
 
-        {hasQueried ? (
+        {results.ownedNfts && !isQuerying ? (
           <SimpleGrid w={'90vw'} columns={4} spacing={24}>
             {results.ownedNfts.map((e, i) => {
               return (
