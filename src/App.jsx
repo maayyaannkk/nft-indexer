@@ -1,16 +1,10 @@
 import {
-  Box,
-  Button,
-  Center,
-  Flex,
-  Heading,
-  Image,
-  Input,
-  SimpleGrid,
-  Text,
+  Box, Button, Center, Flex,
+  Heading, Image, Input, SimpleGrid, Text,
 } from '@chakra-ui/react';
 import { Alchemy, Network } from 'alchemy-sdk';
 import { useState } from 'react';
+import env from 'dotenv';
 
 function App() {
   const [userAddress, setUserAddress] = useState('');
@@ -18,11 +12,12 @@ function App() {
   const [hasQueried, setHasQueried] = useState(false);
   const [tokenDataObjects, setTokenDataObjects] = useState([]);
 
+  const config = {
+    apiKey: env.ALCHEMY_API_KEY,
+    network: Network.ETH_MAINNET,
+  };
+
   async function getNFTsForOwner() {
-    const config = {
-      apiKey: '<-- COPY-PASTE YOUR ALCHEMY API KEY HERE -->',
-      network: Network.ETH_MAINNET,
-    };
 
     const alchemy = new Alchemy(config);
     const data = await alchemy.nft.getNftsForOwner(userAddress);
@@ -33,7 +28,8 @@ function App() {
     for (let i = 0; i < data.ownedNfts.length; i++) {
       const tokenData = alchemy.nft.getNftMetadata(
         data.ownedNfts[i].contract.address,
-        data.ownedNfts[i].tokenId
+        data.ownedNfts[i].tokenId, 
+        {}
       );
       tokenDataPromises.push(tokenData);
     }
